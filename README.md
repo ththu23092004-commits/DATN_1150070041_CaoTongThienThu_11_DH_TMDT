@@ -1,17 +1,17 @@
 HỆ THỐNG QUẢN LÝ VÀ PHÂN PHỐI VÉ SỰ KIỆN TRỰC TUYẾN TÍCH HỢP GỢI Ý SỰ KIỆN CÁ NHÂN HÓA
 
 1. Giới thiệu đề tài
-Đây là đồ án tốt nghiệp xây dựng website quản lý và phân phối vé sự kiện trực tuyến bằng ASP.NET Core MVC (.NET 8) và SQL Server.
+Đây là đồ án tốt nghiệp xây dựng website quản lý và phân phối vé sự kiện trực tuyến bằng ASP.NET Core MVC và SQL Server.
 Hệ thống hỗ trợ khách hàng tìm kiếm sự kiện, đặt vé, thanh toán và quản lý vé đã mua. Ban tổ chức có thể tạo sự kiện, quản lý vé, theo dõi đơn hàng và kiểm tra vé khi người tham gia đến sự kiện. Quản trị viên thực hiện quản lý tài khoản, chủ đề và kiểm duyệt sự kiện.
 Website còn tích hợp chức năng gợi ý sự kiện cá nhân hóa dựa trên sở thích và lịch sử tương tác của người dùng, đồng thời hỗ trợ tìm kiếm và khám phá sự kiện bằng ngôn ngữ tự nhiên.
 
 2. Công nghệ sử dụng
 - ASP.NET Core MVC (.NET 8): Nền tảng xây dựng website.
 - C#: Ngôn ngữ lập trình xử lý các chức năng.
-- HTML, CSS, JavaScript và Bootstrap:** Xây dựng giao diện và xử lý tương tác.
+- HTML, CSS, JavaScript và Bootstrap: Xây dựng giao diện và xử lý tương tác.
 - SQL Server: Lưu trữ và quản lý dữ liệu.
 - Entity Framework Core Kết nối và thao tác với cơ sở dữ liệu.
-- VNPay Sandbox:** Hỗ trợ kiểm thử thanh toán trực tuyến.
+- VNPay Sandbox: Hỗ trợ kiểm thử thanh toán trực tuyến.
 - Gemini API: Hỗ trợ phân tích yêu cầu tìm kiếm bằng ngôn ngữ tự nhiên.
 
 3. Cấu trúc thư mục
