@@ -1,0 +1,516 @@
+
+@model VeSuKienWeb.Models.TaiKhoan.DangKyYeuCau
+
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<style>
+    .register-page {
+        min-height: 82vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: transparent;
+        padding: 38px 16px;
+    }
+
+    .register-page::before,
+    .register-page::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        border-radius: 50%;
+        filter: blur(55px);
+        pointer-events: none;
+    }
+
+    .register-page::before {
+        width: 240px;
+        height: 240px;
+        background: rgba(190, 137, 220, .17);
+        top: 5%;
+        left: 5%;
+    }
+
+    .register-page::after {
+        width: 280px;
+        height: 280px;
+        background: rgba(239, 163, 209, .16);
+        bottom: 0;
+        right: 4%;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 510px;
+        position: relative;
+        overflow: hidden;
+
+        background: rgba(255, 255, 255, .91);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+
+        border: 1px solid rgba(255, 255, 255, .95);
+        border-radius: 24px;
+        padding: 34px 38px;
+
+        box-shadow:
+            0 18px 55px rgba(92, 52, 116, .12),
+            0 4px 15px rgba(92, 52, 116, .05);
+    }
+
+ 
+
+    .register-title {
+        font-size: 30px;
+        font-weight: 800;
+        color: #754394;
+        text-align: center;
+        margin-bottom: 8px;
+        letter-spacing: -.5px;
+    }
+
+    .register-subtitle {
+        text-align: center;
+        color: #927da0;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 27px;
+    }
+
+    .register-heading-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 17px;
+
+        background: linear-gradient(
+            135deg,
+            #f0e2f8,
+            #fbe8f4
+        );
+
+        color: #9154ad;
+        font-size: 25px;
+        box-shadow: 0 5px 15px rgba(145, 84, 173, .09);
+    }
+
+    .register-page .form-label {
+        display: block;
+        font-weight: 700;
+        color: #594166;
+        margin-bottom: 7px;
+        font-size: 13px;
+    }
+
+    .register-page .form-control {
+        width: 100%;
+        height: 46px;
+        border-radius: 12px;
+        border: 1px solid #e7d9ef;
+        background: rgba(250, 247, 253, .9);
+        color: #44304f;
+        font-size: 14px;
+        padding: 9px 13px;
+        box-shadow: none;
+        transition: border-color .2s ease,
+                    box-shadow .2s ease,
+                    background .2s ease;
+    }
+
+    .register-page .form-control::placeholder {
+        color: #b09db9;
+        font-size: 13px;
+    }
+
+    .register-page .form-control:focus {
+        border-color: #b47acb;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(180, 122, 203, .13);
+        outline: none;
+    }
+
+    .register-page .password-wrapper {
+        position: relative;
+    }
+
+    .register-page .password-wrapper .form-control {
+        padding-right: 48px;
+    }
+
+    .register-page .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 14px;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #a58ab3;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 5px;
+        transition: color .2s ease;
+    }
+
+    .register-page .password-toggle:hover {
+        color: #8950a7;
+    }
+
+    .register-page .register-btn {
+        width: 100%;
+        height: 49px;
+        border: none;
+        border-radius: 13px;
+
+        background: linear-gradient(
+            110deg,
+            #9560b5 0%,
+            #b66fc2 55%,
+            #d47eae 100%
+        );
+
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: .2px;
+
+        box-shadow: 0 7px 18px rgba(153, 91, 183, .23);
+        transition: transform .22s ease,
+                    box-shadow .22s ease,
+                    filter .22s ease;
+
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    .register-page .register-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 23px rgba(153, 91, 183, .29);
+        filter: brightness(1.04);
+    }
+
+    .register-page .register-btn:active {
+        transform: translateY(0);
+    }
+
+    .register-page .register-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 17px;
+        border-top: 1px solid #f0e6f4;
+        font-size: 13px;
+        color: #8c7a97;
+    }
+
+    .register-page .register-footer a {
+        color: #9256ae;
+        font-weight: 800;
+        text-decoration: none;
+        margin-left: 4px;
+        transition: color .2s ease;
+    }
+
+    .register-page .register-footer a:hover {
+        color: #c16fae;
+        text-decoration: underline;
+    }
+
+    .register-page .text-danger.small {
+        display: block;
+        font-size: 11px;
+        margin-top: 5px;
+        color: #d45d82 !important;
+    }
+
+    .register-page .form-group-custom {
+        margin-bottom: 15px;
+    }
+
+    @@media (max-width: 576px) {
+        .register-page {
+            min-height: auto;
+            padding: 25px 13px;
+        }
+
+        .register-card {
+            padding: 29px 21px;
+            border-radius: 20px;
+        }
+
+        .register-title {
+            font-size: 26px;
+        }
+    }
+    
+.register-page {
+    min-height: auto;
+    padding: 8px 14px;
+}
+
+.register-card {
+    max-width: 460px;
+    padding: 17px 27px;
+    border-radius: 20px;
+}
+
+.register-heading-icon {
+    width: 39px;
+    height: 39px;
+    margin-bottom: 5px;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+.register-title {
+    font-size: 24px;
+    margin-bottom: 3px;
+}
+
+.register-subtitle {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.register-page form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.register-page .form-group-custom {
+    margin-bottom: 8px;
+}
+
+.register-page .form-label {
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.register-page .form-control {
+    height: 37px;
+    padding: 6px 11px;
+    border-radius: 9px;
+    font-size: 13px;
+}
+
+.register-page .form-control::placeholder {
+    font-size: 12px;
+}
+
+.register-page .password-wrapper .form-control {
+    padding-right: 43px;
+}
+
+.register-page .password-toggle {
+    right: 10px;
+    font-size: 16px;
+}
+
+.register-page .text-danger.small {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+.register-page .text-danger.small:empty {
+    display: none;
+}
+
+.register-page .register-btn {
+    height: 40px;
+    margin-top: 3px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.register-page .register-footer {
+    margin-top: 9px;
+    padding-top: 9px;
+    font-size: 11px;
+}
+
+@@media (max-height: 800px) and (min-width: 577px) {
+    .register-page {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
+    .register-card {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .register-heading-icon {
+        width: 34px;
+        height: 34px;
+        margin-bottom: 4px;
+    }
+
+    .register-subtitle {
+        margin-bottom: 8px;
+    }
+
+    .register-page .form-group-custom {
+        margin-bottom: 6px;
+    }
+
+    .register-page .form-control {
+        height: 34px;
+    }
+
+    .register-page .register-btn {
+        height: 37px;
+    }
+
+    .register-page .register-footer {
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+}
+
+@@media (max-width: 576px) {
+    .register-page {
+        padding: 15px 12px;
+    }
+
+    .register-card {
+        padding: 22px 19px;
+    }
+}
+
+</style>
+
+<div class="register-page">
+    <div class="register-card">
+
+        <div class="register-heading-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+
+        <h2 class="register-title">Tạo tài khoản</h2>
+
+        <p class="register-subtitle">
+            Đăng ký để đặt vé và theo dõi các sự kiện yêu thích.
+        </p>
+
+        <form asp-action="DangKy" method="post">
+
+            <div class="form-group-custom">
+                <label asp-for="HoTen" class="form-label">Họ tên</label>
+                <input asp-for="HoTen"
+                       class="form-control"
+                       placeholder="Nhập họ tên" />
+                <span asp-validation-for="HoTen"
+                      class="text-danger small"></span>
+            </div>
+
+            <div class="form-group-custom">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email"
+                       class="form-control"
+                       placeholder="Nhập email" />
+                <span asp-validation-for="Email"
+                      class="text-danger small"></span>
+            </div>
+
+            <div class="form-group-custom">
+                <label asp-for="DienThoai" class="form-label">
+                    Số điện thoại
+                </label>
+                <input asp-for="DienThoai"
+                       class="form-control"
+                       placeholder="Nhập số điện thoại" />
+                <span asp-validation-for="DienThoai"
+                      class="text-danger small"></span>
+            </div>
+
+            <div class="form-group-custom">
+                <label asp-for="MatKhau" class="form-label">
+                    Mật khẩu
+                </label>
+
+                <div class="password-wrapper">
+                    <input asp-for="MatKhau"
+                           type="password"
+                           class="form-control"
+                           id="matKhauInput"
+                           placeholder="Nhập mật khẩu" />
+
+                    <button type="button"
+                            class="password-toggle"
+                            onclick="togglePassword('matKhauInput', 'matKhauIcon')"
+                            aria-label="Hiện hoặc ẩn mật khẩu">
+                        <i class="bi bi-eye" id="matKhauIcon"></i>
+                    </button>
+                </div>
+
+                <span asp-validation-for="MatKhau"
+                      class="text-danger small"></span>
+            </div>
+
+            <div class="form-group-custom">
+                <label asp-for="XacNhanMatKhau" class="form-label">
+                    Xác nhận mật khẩu
+                </label>
+
+                <div class="password-wrapper">
+                    <input asp-for="XacNhanMatKhau"
+                           type="password"
+                           class="form-control"
+                           id="xacNhanMatKhauInput"
+                           placeholder="Nhập lại mật khẩu" />
+
+                    <button type="button"
+                            class="password-toggle"
+                            onclick="togglePassword('xacNhanMatKhauInput', 'xacNhanMatKhauIcon')"
+                            aria-label="Hiện hoặc ẩn xác nhận mật khẩu">
+                        <i class="bi bi-eye" id="xacNhanMatKhauIcon"></i>
+                    </button>
+                </div>
+
+                <span asp-validation-for="XacNhanMatKhau"
+                      class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="register-btn">
+                <i class="bi bi-person-check me-1"></i>
+                Đăng ký
+            </button>
+
+        </form>
+
+        <div class="register-footer">
+            <span>Đã có tài khoản?</span>
+            <a asp-controller="TaiKhoan" asp-action="DangNhap">
+                Đăng nhập
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (!input || !icon) return;
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        }
+    }
+</script>

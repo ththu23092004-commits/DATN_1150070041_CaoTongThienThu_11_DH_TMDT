@@ -1,0 +1,421 @@
+@model VeSuKienWeb.Models.KhachHang.YeuCauHoanHuyVM
+
+@{
+    ViewData["Title"] = "Yêu cầu hủy vé";
+
+    var danhSachGhe = !string.IsNullOrWhiteSpace(Model.DanhSachGhe)
+        ? Model.DanhSachGhe.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList()
+        : new List<string>();
+
+    int soLuongVe = Model.SoLuongVe > 0 ? Model.SoLuongVe : (danhSachGhe.Any() ? danhSachGhe.Count : 1);
+}
+
+<style>
+    .refund-page {
+        padding: 10px 0 18px;
+        background: transparent;
+    }
+
+    .refund-wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 14px;
+    }
+
+    .refund-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 16px;
+        align-items: start;
+    }
+
+    .refund-card,
+    .refund-note-card {
+        background: #fff;
+        border: 1px solid #eadcf6;
+        border-radius: 22px;
+        box-shadow: 0 14px 28px rgba(117, 76, 157, .08);
+        overflow: hidden;
+    }
+
+    .refund-card-body {
+        padding: 18px 20px;
+    }
+
+    .refund-topbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+
+    .refund-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        background: #fff;
+        color: #6a4f97;
+        border: 1px solid #eadcf6;
+        border-radius: 999px;
+        padding: 10px 15px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        box-shadow: 0 8px 18px rgba(137, 92, 182, .06);
+    }
+
+    .refund-back:hover {
+        color: #5a3f89;
+        background: #faf7fd;
+    }
+
+    .refund-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        background: #f3ebfb;
+        color: #8a63bd;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .refund-event-name {
+        color: #2d214f;
+        font-size: 22px;
+        font-weight: 900;
+        line-height: 1.3;
+        margin-bottom: 14px;
+    }
+
+    .refund-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .refund-summary-item {
+        border: 1px solid #eee3f8;
+        background: #fcf9ff;
+        border-radius: 16px;
+        padding: 12px 14px;
+        min-width: 0;
+    }
+
+    .refund-summary-item--highlight {
+        background: linear-gradient(135deg, #f2ebfb 0%, #fbf8ff 100%);
+        border-color: #dcc8f1;
+    }
+
+    .refund-summary-label {
+        color: #8c7aa9;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .refund-summary-value {
+        color: #2d214f;
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .refund-summary-value--money {
+        color: #7b4cb3;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .refund-seat-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .refund-seat-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        background: #f3ebfb;
+        color: #7c56b0;
+        border: 1px solid #dcc8f1;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .refund-form-wrap {
+        margin-top: 2px;
+        padding-top: 14px;
+        border-top: 1px solid #f0e5f9;
+    }
+
+    .refund-label {
+        display: block;
+        color: #2d214f;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .refund-textarea {
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid #e4d5f3;
+        background: #fff;
+        padding: 12px 14px;
+        font-size: 14px;
+        color: #3b2d61;
+        min-height: 88px;
+        resize: none;
+        outline: none;
+        transition: all .2s ease;
+    }
+
+    .refund-textarea:focus {
+        border-color: #b487de;
+        box-shadow: 0 0 0 .2rem rgba(180, 135, 222, .14);
+    }
+
+    .refund-helper {
+        margin-top: 10px;
+        background: #fff8ef;
+        border: 1px solid #f5d7a8;
+        color: #9a6223;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 12.5px;
+        line-height: 1.45;
+    }
+
+    .refund-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .refund-btn-submit,
+    .refund-btn-back {
+        border-radius: 999px;
+        padding: 11px 18px;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        border: 0;
+    }
+
+    .refund-btn-submit {
+        background: linear-gradient(135deg, #d05b71 0%, #c03d57 100%);
+        color: #fff;
+        box-shadow: 0 12px 22px rgba(192, 61, 87, .18);
+    }
+
+    .refund-btn-submit:hover {
+        background: linear-gradient(135deg, #c44e65 0%, #b9354f 100%);
+        color: #fff;
+    }
+
+    .refund-btn-back {
+        background: #fff;
+        color: #70528f;
+        border: 1px solid #e4d5f3;
+    }
+
+    .refund-btn-back:hover {
+        background: #faf6fe;
+        color: #5f4380;
+    }
+
+    .refund-note-head {
+        padding: 18px 18px 10px;
+    }
+
+    .refund-note-title {
+        color: #2d214f;
+        font-size: 17px;
+        font-weight: 900;
+        margin-bottom: 4px;
+    }
+
+    .refund-note-subtitle {
+        color: #8b79a7;
+        font-size: 12.5px;
+        margin: 0;
+    }
+
+    .refund-note-body {
+        padding: 0 18px 18px;
+    }
+
+    .refund-note-list {
+        margin: 0;
+        padding-left: 18px;
+        color: #5e5276;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .refund-note-list li + li {
+        margin-top: 8px;
+    }
+
+    .text-danger.small {
+        display: block;
+        margin-top: 6px;
+        font-size: 12.5px !important;
+    }
+
+    @@media (max-width: 992px) {
+        .refund-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .refund-summary {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .refund-topbar {
+            justify-content: flex-start;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .refund-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .refund-card-body,
+        .refund-note-body,
+        .refund-note-head {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .refund-actions {
+            flex-direction: column;
+        }
+
+        .refund-btn-submit,
+        .refund-btn-back {
+            width: 100%;
+            text-align: center;
+        }
+
+        .refund-event-name {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<div class="refund-page">
+    <div class="refund-wrap">
+
+        <div class="refund-layout">
+            <div class="refund-card">
+                <div class="refund-card-body">
+                    <div class="refund-badge">
+                        <i class="bi bi-ticket-perforated"></i>
+                        Thông tin yêu cầu
+                    </div>
+
+                    <div class="refund-event-name">@Model.TenSuKien</div>
+
+                    <div class="refund-summary">
+                        <div class="refund-summary-item">
+                            <div class="refund-summary-label">Thời gian diễn ra</div>
+                            <div class="refund-summary-value">
+                                @Model.ThoiGianBatDau.ToString("HH:mm dd/MM/yyyy")
+                            </div>
+                        </div>
+
+                        <div class="refund-summary-item">
+                            <div class="refund-summary-label">Loại vé</div>
+                            <div class="refund-summary-value">@Model.TenLoaiVe</div>
+                        </div>
+
+                        <div class="refund-summary-item">
+                            <div class="refund-summary-label">Số lượng vé</div>
+                            <div class="refund-summary-value">@soLuongVe vé</div>
+                        </div>
+
+                        <div class="refund-summary-item refund-summary-item--highlight">
+                            <div class="refund-summary-label">Giá trị vé cần hủy</div>
+                            <div class="refund-summary-value refund-summary-value--money">
+                                @Model.SoTien.ToString("N0") đ
+                            </div>
+                        </div>
+
+                        @if (danhSachGhe.Any())
+                        {
+                            <div class="refund-summary-item" style="grid-column: 1 / -1;">
+                                <div class="refund-summary-label">Ghế đã đặt</div>
+                                <div class="refund-seat-tags">
+                                    @foreach (var ghe in danhSachGhe)
+                                    {
+                                        <span class="refund-seat-tag">@ghe</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <form asp-action="YeuCauHoanHuy" method="post" class="refund-form-wrap">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="VeId" />
+
+                        <label asp-for="LyDo" class="refund-label">Lý do hủy vé</label>
+
+                        <textarea asp-for="LyDo"
+                                  class="refund-textarea"
+                                  placeholder="Nhập lý do bạn muốn hủy vé..."></textarea>
+
+                        <span asp-validation-for="LyDo" class="text-danger small"></span>
+
+                        <div class="refund-helper">
+                            Yêu cầu sẽ được gửi để xem xét trước khi xử lý.
+                        </div>
+
+                        <div class="refund-actions">
+                            <button type="submit" class="refund-btn-submit">
+                                Gửi yêu cầu hủy
+                            </button>
+
+                            <a asp-action="VeCuaToi" class="refund-btn-back">
+                                Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="refund-note-card">
+                <div class="refund-note-head">
+                    <div class="refund-note-title">Lưu ý</div>
+                    <p class="refund-note-subtitle">Thông tin cần biết trước khi gửi.</p>
+                </div>
+
+                <div class="refund-note-body">
+                    <ul class="refund-note-list">
+                        <li>Chỉ gửi yêu cầu khi vé còn đủ điều kiện hủy.</li>
+                        <li>Vé đã check in hoặc sự kiện đã diễn ra sẽ không thể hủy.</li>
+                        <li>Lý do rõ ràng sẽ giúp quá trình xử lý nhanh hơn.</li>
+                        <li>Sau khi gửi, yêu cầu sẽ chuyển sang trạng thái chờ duyệt.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

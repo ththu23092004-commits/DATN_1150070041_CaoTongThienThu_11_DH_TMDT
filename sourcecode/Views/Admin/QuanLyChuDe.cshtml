@@ -1,0 +1,1240 @@
+
+@model List<VeSuKienWeb.Models.ChuDeSuKien>
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý chủ đề sự kiện";
+
+    int tongChuDe = Model?.Count ?? 0;
+    int dangHoatDong = Model?.Count(x => x.TrangThai) ?? 0;
+    int daTamTat = tongChuDe - dangHoatDong;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+
+<style>
+    .cd-page,
+    .cd-page *,
+    .cd-modal,
+    .cd-modal * {
+        box-sizing: border-box;
+        font-family: "Be Vietnam Pro", sans-serif;
+    }
+
+    .cd-page {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding-bottom: 28px;
+        color: #574663;
+        font-size: 13px;
+    }
+
+    .cd-header {
+        margin-bottom: 20px;
+    }
+
+    .cd-header h1 {
+        margin: 0;
+        color: #253449;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .cd-header p {
+        margin: 6px 0 0;
+        color: #64748b;
+        font-size: 12.5px;
+        line-height: 1.7;
+    }
+
+    .cd-card {
+        width: 100%;
+        margin-bottom: 18px;
+        overflow: hidden;
+        border: 1px solid #e9ddec;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 7px 24px rgba(85,48,104,.045);
+    }
+
+    .cd-stats {
+        display: grid;
+        grid-template-columns: repeat(3,minmax(0,1fr));
+        gap: 11px;
+        margin-bottom: 18px;
+    }
+
+    .cd-stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+        min-height: 67px;
+        padding: 11px 16px;
+        border: 1px solid #eee3f0;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .cd-stat span {
+        color: #9885a3;
+        font-size: 11.5px;
+    }
+
+    .cd-stat strong {
+        color: #594465;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .cd-stat-icon {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+        border-radius: 10px;
+        background: #f1e5f6;
+        color: #a16ab4;
+        font-size: 15px;
+    }
+
+    .cd-stat:nth-child(2) .cd-stat-icon {
+        background: #e9f7ef;
+        color: #419873;
+    }
+
+    .cd-stat:nth-child(3) .cd-stat-icon {
+        background: #fff3e5;
+        color: #bd8b4d;
+    }
+
+    .cd-section {
+        padding: 19px 20px;
+    }
+
+    .cd-section-title {
+        margin: 0 0 17px;
+        color: #4c3958;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .cd-add-form {
+        display: grid;
+        grid-template-columns: minmax(180px,1fr) minmax(220px,1.4fr) auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .cd-field {
+        min-width: 0;
+    }
+
+    .cd-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #665070;
+        font-size: 11.5px;
+        font-weight: 750;
+    }
+
+    .cd-input {
+        width: 100%;
+        min-height: 40px;
+        padding: 9px 12px;
+        border: 1px solid #e6d9e9;
+        border-radius: 9px;
+        outline: none;
+        background: #fefcfe;
+        color: #584563;
+        font-size: 12px;
+    }
+
+    .cd-input:focus {
+        border-color: #b889c8;
+        box-shadow: 0 0 0 3px rgba(174,118,191,.1);
+    }
+
+    .cd-textarea {
+        min-height: 105px;
+        resize: vertical;
+        line-height: 1.7;
+    }
+
+    .cd-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 38px;
+        padding: 9px 14px;
+        border: 0;
+        border-radius: 9px;
+        font-size: 11.5px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: .2s ease;
+        white-space: nowrap;
+    }
+
+    .cd-btn:hover {
+        filter: brightness(.96);
+        transform: translateY(-1px);
+    }
+
+    .cd-btn-add {
+        color: #fff;
+        background: linear-gradient(110deg,#a66cbb,#9565b9);
+        box-shadow: 0 4px 12px rgba(165,100,184,.13);
+    }
+
+    .cd-btn-off {
+        color: #a85b20;
+        background: #fff0dc;
+    }
+
+    .cd-btn-on {
+        color: #217552;
+        background: #e2f5e9;
+    }
+
+    .cd-btn-cancel {
+        color: #806b8b;
+        background: #f5f0f7;
+        border: 1px solid #eaddec;
+    }
+
+    .cd-btn-save {
+        color: #fff;
+        background: #a66cbb;
+    }
+
+    .cd-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .cd-table {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+    }
+
+    .cd-table thead {
+        background: #fcf8fd;
+    }
+
+    .cd-table th {
+        padding: 13px 14px;
+        border-bottom: 1px solid #eee4f0;
+        color: #927d9d;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .cd-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f2eaf3;
+        color: #6f5d79;
+        vertical-align: middle;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .cd-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .cd-row {
+        transition: background .18s ease;
+    }
+
+    .cd-row:hover {
+        background: #fdf8fe;
+    }
+
+    .cd-topic-trigger {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #594465;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .cd-topic-trigger strong {
+        font-size: 12.5px;
+        font-weight: 750;
+    }
+
+    .cd-topic-trigger small {
+        color: #ab9ab4;
+        font-size: 10.5px;
+    }
+
+    .cd-topic-trigger:hover strong {
+        color: #a16ab4;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .cd-description {
+        max-width: 390px;
+        color: #8d7b96 !important;
+        overflow-wrap: anywhere;
+    }
+
+    .cd-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .cd-badge-active {
+        color: #24805a;
+        background: #e4f7ed;
+    }
+
+    .cd-badge-inactive {
+        color: #a66b2b;
+        background: #fff1df;
+    }
+
+    .cd-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .cd-empty {
+        padding: 35px 20px !important;
+        color: #9c8aa5 !important;
+        text-align: center;
+    }
+
+    .cd-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 13px 20px;
+        border-top: 1px solid #f1e9f3;
+    }
+
+    .cd-page-info {
+        color: #9987a3;
+        font-size: 11.5px;
+    }
+
+    .cd-pagination {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cd-page-button {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 9px;
+        border: 1px solid #e8dbea;
+        border-radius: 8px;
+        background: #fff;
+        color: #806b8b;
+        font-size: 11.5px;
+        cursor: pointer;
+    }
+
+    .cd-page-button.active {
+        border-color: #ad79bf;
+        background: #ad79bf;
+        color: #fff;
+    }
+
+    .cd-page-button:disabled {
+        opacity: .4;
+        cursor: default;
+    }
+
+    .cd-alert {
+        margin-bottom: 16px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .cd-success {
+        border: 1px solid #d4efdf;
+        background: #e4f7eb;
+        color: #216b4b;
+    }
+
+    .cd-error {
+        border: 1px solid #f4d9d9;
+        background: #fff0f0;
+        color: #a53636;
+    }
+
+    .cd-note {
+        margin: 0;
+        padding: 13px 20px 16px;
+        border-top: 1px solid #f1e9f3;
+        color: #9987a3;
+        font-size: 11px;
+        line-height: 1.8;
+    }
+
+    .cd-modal[hidden] {
+        display: none !important;
+    }
+
+    .cd-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 20000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(43,27,51,.57);
+        backdrop-filter: blur(4px);
+    }
+
+    .cd-dialog {
+        width: 100%;
+        max-width: 530px;
+        max-height: 90vh;
+        overflow-y: auto;
+        border: 1px solid #eadbed;
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(36,19,44,.25);
+    }
+
+    .cd-dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 22px 17px;
+        border-bottom: 1px solid #f0e7f2;
+    }
+
+    .cd-dialog-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 43px;
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        background: #f1e5f6;
+        color: #a16ab4;
+        font-size: 19px;
+    }
+
+    .cd-dialog-icon.warning {
+        background: #fff2e2;
+        color: #bc8643;
+    }
+
+    .cd-dialog-icon.success {
+        background: #e6f6ed;
+        color: #3c9870;
+    }
+
+    .cd-dialog-title {
+        margin: 0;
+        color: #4d3857;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .cd-dialog-subtitle {
+        margin: 5px 0 0;
+        color: #9b89a4;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .cd-dialog-body {
+        padding: 20px 22px;
+    }
+
+    .cd-topic-profile {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 17px;
+        padding: 12px 13px;
+        border: 1px solid #eee1f0;
+        border-radius: 11px;
+        background: #fcf8fd;
+    }
+
+    .cd-topic-profile span {
+        display: block;
+        color: #a18da9;
+        font-size: 10.5px;
+    }
+
+    .cd-topic-profile strong {
+        display: block;
+        margin-top: 4px;
+        color: #584064;
+        font-size: 12px;
+    }
+
+    .cd-form-field {
+        margin-bottom: 15px;
+    }
+
+    .cd-form-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #665070;
+        font-size: 11.5px;
+        font-weight: 750;
+    }
+
+    .cd-dialog-note {
+        display: flex;
+        gap: 9px;
+        margin-top: 15px;
+        padding: 11px 12px;
+        border-radius: 9px;
+        background: #f5eef9;
+        color: #936da2;
+        font-size: 11px;
+        line-height: 1.8;
+    }
+
+    .cd-dialog-note.warning {
+        background: #fff7ed;
+        color: #a67d48;
+    }
+
+    .cd-dialog-note i {
+        flex: 0 0 auto;
+        font-size: 14px;
+    }
+
+    .cd-dialog-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 9px;
+        padding: 15px 22px 19px;
+        border-top: 1px solid #f1e8f3;
+    }
+
+    .cd-confirm-btn {
+        min-height: 38px;
+        padding: 9px 16px;
+        border: 0;
+        border-radius: 9px;
+        background: #bd8646;
+        color: #fff;
+        font-size: 11.5px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .cd-confirm-btn.enable {
+        background: #299773;
+    }
+
+    .cd-modal-close {
+        min-height: 38px;
+        padding: 9px 15px;
+        border: 1px solid #eaddec;
+        border-radius: 9px;
+        background: #fff;
+        color: #806b8b;
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    @@media (max-width: 900px) {
+        .cd-add-form {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .cd-add-form .cd-btn-add {
+            grid-column: 1 / -1;
+            justify-self: start;
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .cd-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .cd-add-form {
+            grid-template-columns: 1fr;
+        }
+
+        .cd-add-form .cd-btn-add {
+            grid-column: auto;
+        }
+
+        .cd-section {
+            padding: 16px 14px;
+        }
+
+        .cd-footer {
+            padding: 13px 14px;
+        }
+
+        .cd-dialog-header,
+        .cd-dialog-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .cd-dialog-actions {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
+</style>
+
+<div class="cd-page">
+
+    <div class="cd-header">
+        <h1>Quản lý chủ đề sự kiện</h1>
+        <p>
+            Quản lý các chủ đề được sử dụng khi tạo sự kiện
+            và lựa chọn sở thích của khách hàng.
+        </p>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="cd-alert cd-success" role="status">
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["ThanhCong"]
+        </div>
+    }
+
+    @if (TempData["Loi"] != null)
+    {
+        <div class="cd-alert cd-error" role="alert">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            @TempData["Loi"]
+        </div>
+    }
+
+    <div class="cd-stats">
+
+        <div class="cd-stat">
+            <div>
+                <span>Tổng số chủ đề</span>
+                <strong class="d-block">@tongChuDe</strong>
+            </div>
+            <div class="cd-stat-icon">
+                <i class="bi bi-tags"></i>
+            </div>
+        </div>
+
+        <div class="cd-stat">
+            <div>
+                <span>Đang hoạt động</span>
+                <strong class="d-block">@dangHoatDong</strong>
+            </div>
+            <div class="cd-stat-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+        </div>
+
+        <div class="cd-stat">
+            <div>
+                <span>Đã tạm tắt</span>
+                <strong class="d-block">@daTamTat</strong>
+            </div>
+            <div class="cd-stat-icon">
+                <i class="bi bi-pause-circle"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="cd-card">
+        <div class="cd-section">
+            <h2 class="cd-section-title">Thêm chủ đề mới</h2>
+
+            <form asp-controller="AdminChuDe"
+                  asp-action="Them"
+                  method="post"
+                  class="cd-add-form">
+
+                @Html.AntiForgeryToken()
+
+                <div class="cd-field">
+                    <label for="cdNewName">Tên chủ đề</label>
+                    <input type="text"
+                           id="cdNewName"
+                           name="tenChuDe"
+                           class="cd-input"
+                           maxlength="100"
+                           placeholder="Nhập tên chủ đề"
+                           required />
+                </div>
+
+                <div class="cd-field">
+                    <label for="cdNewDescription">Mô tả</label>
+                    <input type="text"
+                           id="cdNewDescription"
+                           name="moTa"
+                           class="cd-input"
+                           maxlength="500"
+                           placeholder="Mô tả ngắn về chủ đề" />
+                </div>
+
+                <button type="submit" class="cd-btn cd-btn-add">
+                    <i class="bi bi-plus-circle"></i>
+                    Thêm chủ đề
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="cd-card">
+
+        <div class="cd-section">
+            <h2 class="cd-section-title mb-0">Danh sách chủ đề</h2>
+        </div>
+
+        <div class="cd-table-wrap">
+            <table class="cd-table">
+                <thead>
+                    <tr>
+                        <th style="width:65px">STT</th>
+                        <th>Chủ đề</th>
+                        <th>Mô tả</th>
+                        <th style="width:145px">Trạng thái</th>
+                        <th style="width:115px">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody id="cdTableBody">
+
+                    @if (Model != null && Model.Any())
+                    {
+                        int stt = 0;
+
+                        foreach (var item in Model)
+                        {
+                            stt++;
+
+                            <tr class="cd-row"
+                                data-id="@item.ChuDeId"
+                                data-name="@item.TenChuDe"
+                                data-description="@(item.MoTa ?? "")"
+                                data-active="@(item.TrangThai ? "true" : "false")">
+
+                                <td class="cd-stt">@stt</td>
+
+                                <td>
+                                    <button type="button"
+                                            class="cd-topic-trigger cd-open-detail">
+                                        <strong>@item.TenChuDe</strong>
+                                        <small>Mã chủ đề #@item.ChuDeId · Xem chi tiết</small>
+                                    </button>
+                                </td>
+
+                                <td class="cd-description">
+                                    @(string.IsNullOrWhiteSpace(item.MoTa)
+                                        ? "Chưa có mô tả"
+                                        : item.MoTa)
+                                </td>
+
+                                <td>
+                                    @if (item.TrangThai)
+                                    {
+                                        <span class="cd-badge cd-badge-active">
+                                            <i class="bi bi-check-circle"></i>
+                                            Đang hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="cd-badge cd-badge-inactive">
+                                            <i class="bi bi-pause-circle"></i>
+                                            Tạm tắt
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="cd-actions">
+                                        @if (item.TrangThai)
+                                        {
+                                            <button type="button"
+                                                    class="cd-btn cd-btn-off cd-open-status"
+                                                    data-id="@item.ChuDeId"
+                                                    data-name="@item.TenChuDe"
+                                                    data-active="true">
+                                                <i class="bi bi-pause-circle"></i>
+                                                Tắt
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button"
+                                                    class="cd-btn cd-btn-on cd-open-status"
+                                                    data-id="@item.ChuDeId"
+                                                    data-name="@item.TenChuDe"
+                                                    data-active="false">
+                                                <i class="bi bi-play-circle"></i>
+                                                Bật
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="cd-empty">
+                                <i class="bi bi-tags d-block mb-2"
+                                   style="font-size:25px"></i>
+                                Chưa có chủ đề nào.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="cd-footer">
+            <span class="cd-page-info" id="cdPageInfo"></span>
+            <div class="cd-pagination" id="cdPagination"></div>
+        </div>
+
+        <p class="cd-note">
+            Chủ đề đã tắt sẽ không được chọn cho sự kiện hoặc khảo sát mới.
+            Những thông tin đã lưu trước đó vẫn được giữ nguyên.
+        </p>
+
+    </div>
+
+</div>
+
+<div class="cd-modal" id="cdDetailModal" hidden>
+    <div class="cd-dialog"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="cdDetailTitle">
+
+        <div class="cd-dialog-header">
+            <div class="cd-dialog-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+
+            <div>
+                <h2 class="cd-dialog-title" id="cdDetailTitle">
+                    Chi tiết chủ đề
+                </h2>
+                <p class="cd-dialog-subtitle">
+                    Xem và chỉnh sửa thông tin chủ đề sự kiện.
+                </p>
+            </div>
+        </div>
+
+        <form asp-controller="AdminChuDe"
+              asp-action="Sua"
+              method="post"
+              id="cdEditForm">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="chuDeId"
+                   id="cdEditId" />
+
+            <div class="cd-dialog-body">
+
+                <div class="cd-topic-profile">
+                    <div>
+                        <span>Mã chủ đề</span>
+                        <strong id="cdDetailCode"></strong>
+                    </div>
+
+                    <div>
+                        <span>Trạng thái hiện tại</span>
+                        <strong id="cdDetailStatus"></strong>
+                    </div>
+                </div>
+
+                <div class="cd-form-field">
+                    <label for="cdEditName">Tên chủ đề</label>
+                    <input type="text"
+                           id="cdEditName"
+                           name="tenChuDe"
+                           class="cd-input"
+                           maxlength="100"
+                           required />
+                </div>
+
+                <div class="cd-form-field mb-0">
+                    <label for="cdEditDescription">Mô tả</label>
+                    <textarea id="cdEditDescription"
+                              name="moTa"
+                              class="cd-input cd-textarea"
+                              maxlength="500"
+                              placeholder="Nhập mô tả cho chủ đề"></textarea>
+                </div>
+
+                <div class="cd-dialog-note">
+                    <i class="bi bi-info-circle"></i>
+                    <span>
+                        Thay đổi tên hoặc mô tả không làm mất các sở thích
+                        và sự kiện đã liên kết với chủ đề này.
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="cd-dialog-actions">
+                <button type="button"
+                        class="cd-modal-close cd-close-modal">
+                    Đóng
+                </button>
+
+                <button type="submit" class="cd-btn cd-btn-save">
+                    <i class="bi bi-check2-circle"></i>
+                    Lưu thay đổi
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div class="cd-modal" id="cdStatusModal" hidden>
+    <div class="cd-dialog"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="cdStatusTitle">
+
+        <div class="cd-dialog-header">
+            <div class="cd-dialog-icon warning" id="cdStatusIcon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+
+            <div>
+                <h2 class="cd-dialog-title" id="cdStatusTitle">
+                    Xác nhận thay đổi trạng thái
+                </h2>
+                <p class="cd-dialog-subtitle" id="cdStatusSubtitle">
+                    Vui lòng kiểm tra lại trước khi thực hiện.
+                </p>
+            </div>
+        </div>
+
+        <form asp-controller="AdminChuDe"
+              asp-action="DoiTrangThai"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="chuDeId"
+                   id="cdStatusId" />
+
+            <div class="cd-dialog-body">
+
+                <div class="cd-topic-profile">
+                    <div>
+                        <span>Chủ đề</span>
+                        <strong id="cdStatusName"></strong>
+                    </div>
+                </div>
+
+                <div class="cd-dialog-note warning"
+                     id="cdStatusMessage">
+                    <i class="bi bi-info-circle"></i>
+                    <span></span>
+                </div>
+
+            </div>
+
+            <div class="cd-dialog-actions">
+                <button type="button"
+                        class="cd-modal-close cd-close-modal">
+                    Quay lại
+                </button>
+
+                <button type="submit"
+                        class="cd-confirm-btn"
+                        id="cdStatusConfirm">
+                    Xác nhận
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    const rows = Array.from(
+        document.querySelectorAll(".cd-row")
+    );
+
+    const pageInfo = document.getElementById("cdPageInfo");
+    const pagination = document.getElementById("cdPagination");
+
+    const detailModal = document.getElementById("cdDetailModal");
+    const statusModal = document.getElementById("cdStatusModal");
+
+    const pageSize = 6;
+    let currentPage = 1;
+    let previousFocus = null;
+
+    function byId(id) {
+        return document.getElementById(id);
+    }
+
+    function setText(id, value) {
+        const element = byId(id);
+        if (element) element.textContent = value ?? "";
+    }
+
+    function openModal(modal) {
+        previousFocus = document.activeElement;
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+
+        const firstControl = modal.querySelector(
+            'input:not([type="hidden"]), textarea, button'
+        );
+
+        if (firstControl) {
+            firstControl.focus();
+        }
+    }
+
+    function closeModals() {
+        detailModal.hidden = true;
+        statusModal.hidden = true;
+        document.body.style.overflow = "";
+
+        if (previousFocus && typeof previousFocus.focus === "function") {
+            previousFocus.focus();
+        }
+    }
+
+    function openDetail(row) {
+        const data = row.dataset;
+
+        byId("cdEditId").value = data.id;
+        byId("cdEditName").value = data.name || "";
+        byId("cdEditDescription").value = data.description || "";
+
+        setText("cdDetailCode", "#" + data.id);
+        setText(
+            "cdDetailStatus",
+            data.active === "true" ? "Đang hoạt động" : "Tạm tắt"
+        );
+
+        openModal(detailModal);
+    }
+
+    function openStatus(button) {
+        const id = button.dataset.id;
+        const name = button.dataset.name;
+        const isActive = button.dataset.active === "true";
+
+        byId("cdStatusId").value = id;
+        setText("cdStatusName", name);
+
+        const title = byId("cdStatusTitle");
+        const subtitle = byId("cdStatusSubtitle");
+        const message = byId("cdStatusMessage");
+        const confirm = byId("cdStatusConfirm");
+        const icon = byId("cdStatusIcon");
+
+        if (isActive) {
+            title.textContent = "Xác nhận tắt chủ đề";
+            subtitle.textContent =
+                "Chủ đề sẽ không còn được lựa chọn mới sau khi tắt.";
+
+            message.querySelector("span").textContent =
+                "Các sự kiện và sở thích đã liên kết vẫn được giữ nguyên. " +
+                "Bạn có chắc chắn muốn tắt chủ đề này không?";
+
+            icon.className = "cd-dialog-icon warning";
+            icon.innerHTML = '<i class="bi bi-pause-circle"></i>';
+
+            confirm.textContent = "Xác nhận tắt";
+            confirm.className = "cd-confirm-btn";
+        } else {
+            title.textContent = "Xác nhận bật chủ đề";
+            subtitle.textContent =
+                "Chủ đề sẽ được phép lựa chọn trở lại.";
+
+            message.querySelector("span").textContent =
+                "Chủ đề sẽ xuất hiện trở lại trong các lựa chọn mới. " +
+                "Bạn có chắc chắn muốn bật chủ đề này không?";
+
+            icon.className = "cd-dialog-icon success";
+            icon.innerHTML = '<i class="bi bi-check-circle"></i>';
+
+            confirm.textContent = "Xác nhận bật";
+            confirm.className = "cd-confirm-btn enable";
+        }
+
+        openModal(statusModal);
+    }
+
+    function createPageButton(label, target, active, disabled) {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className =
+            "cd-page-button" + (active ? " active" : "");
+
+        button.textContent = label;
+        button.disabled = disabled;
+
+        if (active) {
+            button.setAttribute("aria-current", "page");
+        }
+
+        button.addEventListener("click", function () {
+            currentPage = target;
+            render();
+        });
+
+        return button;
+    }
+
+    function render() {
+        const pageCount = Math.max(
+            1,
+            Math.ceil(rows.length / pageSize)
+        );
+
+        currentPage = Math.min(currentPage, pageCount);
+
+        rows.forEach(row => {
+            row.hidden = true;
+            row.style.display = "none";
+        });
+
+        const start = (currentPage - 1) * pageSize;
+        const end = Math.min(start + pageSize, rows.length);
+
+        rows.slice(start, end).forEach((row, index) => {
+            row.hidden = false;
+            row.style.display = "";
+            const stt = row.querySelector(".cd-stt");
+
+            if (stt) {
+                stt.textContent = start + index + 1;
+            }
+        });
+
+        if (rows.length === 0) {
+            pageInfo.textContent = "Chưa có chủ đề nào.";
+        } else {
+            pageInfo.textContent =
+                `Hiển thị ${start + 1}–${end} / ${rows.length} chủ đề`;
+        }
+
+        pagination.replaceChildren();
+
+        if (pageCount <= 1) return;
+
+        pagination.appendChild(createPageButton(
+            "Trước",
+            Math.max(1, currentPage - 1),
+            false,
+            currentPage === 1
+        ));
+
+        for (let i = 1; i <= pageCount; i++) {
+            pagination.appendChild(createPageButton(
+                String(i),
+                i,
+                i === currentPage,
+                false
+            ));
+        }
+
+        pagination.appendChild(createPageButton(
+            "Sau",
+            Math.min(pageCount, currentPage + 1),
+            false,
+            currentPage === pageCount
+        ));
+    }
+
+rows.forEach(row => {
+    row.style.cursor = "pointer";
+
+    row.addEventListener("click", function (event) {
+        if (event.target.closest(".cd-open-status")) {
+            return;
+        }
+
+        openDetail(row);
+    });
+});
+
+    document.querySelectorAll(".cd-open-status")
+        .forEach(button => {
+            button.addEventListener("click", function () {
+                openStatus(button);
+            });
+        });
+
+    document.querySelectorAll(".cd-close-modal")
+        .forEach(button => {
+            button.addEventListener("click", closeModals);
+        });
+
+    [detailModal, statusModal].forEach(modal => {
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeModals();
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" &&
+            (!detailModal.hidden || !statusModal.hidden)) {
+            closeModals();
+        }
+    });
+
+    render();
+})();
+</script>
