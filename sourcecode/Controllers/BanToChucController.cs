@@ -471,7 +471,27 @@ else if (chuDeHopLe.Count != model.ChuDeIds.Count)
                 await NapDanhSachChuDeAsync();
                 return View(model);
             }
+if (model.ThoiGianBatDau < DateTime.Now)
+{
+    ModelState.AddModelError(
+        nameof(model.ThoiGianBatDau),
+        "Thời gian bắt đầu không được nằm trong quá khứ.");
 
+    var loaiHienThi = await _db.LoaiSuKien
+        .Where(x => x.TenLoai != null &&
+                    !x.TenLoai.Trim().ToLower().Contains("hybrid"))
+        .ToListAsync();
+
+    ViewBag.LoaiId = new SelectList(
+        loaiHienThi,
+        "LoaiId",
+        "TenLoai",
+        model.LoaiId);
+
+    await NapDanhSachChuDeAsync();
+
+    return View(model);
+}
             if (model.ThoiGianKetThuc <= model.ThoiGianBatDau)
             {
                 ModelState.AddModelError(string.Empty, "Thời gian kết thúc phải sau thời gian bắt đầu.");
@@ -1053,6 +1073,345 @@ catch (Exception ex)
         }
 
         // ========= CHI TIẾT SỰ KIỆN CHO BAN TỔ CHỨC + THỐNG KÊ ĐƠN GIẢN =========
+        [HttpGet]
+public async Task<IActionResult> SuaSuKien(int id)
+{
+    var toChucId = await GetOrCreateToChucIdAsync();
+
+    var sk = await _db.SuKien
+        .Include(x => x.DiaDiem)
+        .FirstOrDefaultAsync(x =>
+            x.SuKienId == id &&
+            x.ToChucId == toChucId);
+
+    if (sk == null)
+        return NotFound();
+
+    if (sk.TrangThaiDuyet != "ChoDuyet" &&
+        sk.TrangThaiDuyet != "TuChoi")
+    {
+        TempData["ThongBao"] =
+            "Chỉ có thể chỉnh sửa sự kiện đang chờ duyệt hoặc bị từ chối.";
+
+        return RedirectToAction("Index");
+    }
+
+    var online = await _db.SuKienTrucTuyen
+        .AsNoTracking()
+        .FirstOrDefaultAsync(x => x.SuKienId == id);
+
+    var chuDeIds = await _db.SuKienChuDe
+        .Where(x => x.SuKienId == id)
+        .Select(x => x.ChuDeId)
+        .ToListAsync();
+
+    var model = new TaoSuKienYeuCau
+    {
+        TenSuKien = sk.TenSuKien,
+        MoTaChiTiet = sk.MoTaChiTiet,
+
+        ThoiGianBatDau = sk.ThoiGianBatDau,
+        ThoiGianKetThuc = sk.ThoiGianKetThuc,
+
+        LoaiId = sk.LoaiId,
+
+        TenDiaDiem = sk.DiaDiem?.TenDiaDiem,
+        DiaChi = sk.DiaDiem?.DiaChi,
+        BanDo = sk.DiaDiem?.BanDo,
+
+        NenTang = online?.NenTang,
+        LinkXem = online?.LinkXem,
+        MatKhauPhong = online?.MatKhauPhong,
+        HuongDan = online?.HuongDan,
+
+        ChuDeIds = chuDeIds
+    };
+
+var danhSachVe = await _db.LoaiVe
+    .AsNoTracking()
+    .Where(x => x.SuKienId == id)
+    .OrderBy(x => x.LoaiVeId)
+    .ToListAsync();
+
+model.SoLuongToiDa = sk.SoLuongToiDa;
+model.GiaVeMacDinh = sk.GiaVeMacDinh;
+model.SoChoNgoi = sk.DiaDiem?.SoChoNgoi;
+
+if (online != null)
+{
+    var veOnline = danhSachVe.FirstOrDefault();
+
+    if (veOnline != null)
+    {
+        model.TenLoaiVe1 = veOnline.TenLoai;
+        model.GiaVe1 = veOnline.GiaVe;
+        model.SoLuongVe1 = veOnline.SoLuong;
+    }
+}
+else
+{
+    var veVip = danhSachVe.FirstOrDefault(x =>
+        x.MoTa == "Khu vé VIP.");
+
+    var veThuong = danhSachVe.FirstOrDefault(x =>
+        x.MoTa == "Khu vé Thường.");
+
+    if (veVip != null)
+    {
+        model.TenLoaiVe1 = veVip.TenLoai;
+        model.GiaVe1 = veVip.GiaVe;
+        model.SoLuongVe1 = veVip.SoLuong;
+    }
+
+    if (veThuong != null)
+    {
+        model.TenLoaiVe2 = veThuong.TenLoai;
+        model.GiaVe2 = veThuong.GiaVe;
+        model.SoLuongVe2 = veThuong.SoLuong;
+    }
+}
+
+ViewBag.SuKienId = id;
+ViewBag.AnhHienTai = sk.AnhSuKien;
+ViewBag.LaTrucTuyen = online != null;
+
+var loaiHienThi = await _db.LoaiSuKien
+    .Where(x => x.TenLoai != null &&
+                !x.TenLoai.Trim().ToLower().Contains("hybrid"))
+    .ToListAsync();
+
+ViewBag.LoaiId = new SelectList(
+    loaiHienThi,
+    "LoaiId",
+    "TenLoai",
+    model.LoaiId);
+
+await NapDanhSachChuDeAsync();
+
+return View(model);
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> SuaSuKien(
+    int id,
+    TaoSuKienYeuCau model,
+    IFormFile? AnhSuKienFile)
+{
+    var toChucId = await GetOrCreateToChucIdAsync();
+
+    var sk = await _db.SuKien
+        .Include(x => x.DiaDiem)
+        .FirstOrDefaultAsync(x =>
+            x.SuKienId == id &&
+            x.ToChucId == toChucId);
+
+    if (sk == null)
+        return NotFound();
+
+    if (sk.TrangThaiDuyet != "ChoDuyet" &&
+        sk.TrangThaiDuyet != "TuChoi")
+    {
+        TempData["ThongBao"] =
+            "Sự kiện này không còn được phép chỉnh sửa.";
+
+        return RedirectToAction("Index");
+    }
+
+    var online = await _db.SuKienTrucTuyen
+        .FirstOrDefaultAsync(x => x.SuKienId == id);
+
+    model.ChuDeIds = (model.ChuDeIds ?? new List<int>())
+        .Distinct()
+        .ToList();
+
+    if (model.LoaiId != sk.LoaiId)
+    {
+        ModelState.AddModelError(
+            nameof(model.LoaiId),
+            "Không thể thay đổi loại sự kiện đã tạo.");
+    }
+
+    if (model.ThoiGianBatDau < DateTime.Now)
+    {
+        ModelState.AddModelError(
+            nameof(model.ThoiGianBatDau),
+            "Thời gian bắt đầu phải từ hiện tại trở đi.");
+    }
+
+    if (model.ThoiGianKetThuc <= model.ThoiGianBatDau)
+    {
+        ModelState.AddModelError(
+            nameof(model.ThoiGianKetThuc),
+            "Thời gian kết thúc phải sau thời gian bắt đầu.");
+    }
+
+    var chuDeHopLe = await _db.ChuDeSuKien
+        .Where(x =>
+            model.ChuDeIds.Contains(x.ChuDeId) &&
+            x.TrangThai)
+        .Select(x => x.ChuDeId)
+        .ToListAsync();
+
+    if (model.ChuDeIds.Count == 0 ||
+        chuDeHopLe.Count != model.ChuDeIds.Count)
+    {
+        ModelState.AddModelError(
+            nameof(model.ChuDeIds),
+            "Vui lòng chọn ít nhất một chủ đề đang hoạt động.");
+    }
+
+    if (sk.DiaDiem != null &&
+        (string.IsNullOrWhiteSpace(model.TenDiaDiem) ||
+         string.IsNullOrWhiteSpace(model.DiaChi)))
+    {
+        ModelState.AddModelError(
+            nameof(model.TenDiaDiem),
+            "Vui lòng nhập đầy đủ tên địa điểm và địa chỉ.");
+    }
+
+    if (online != null &&
+        (string.IsNullOrWhiteSpace(model.NenTang) ||
+         string.IsNullOrWhiteSpace(model.LinkXem)))
+    {
+        ModelState.AddModelError(
+            nameof(model.LinkXem),
+            "Vui lòng nhập nền tảng và đường dẫn tham gia.");
+    }
+
+    string? extension = null;
+
+    if (AnhSuKienFile != null &&
+        AnhSuKienFile.Length > 0)
+    {
+        extension = await KiemTraAnhSuKienAsync(AnhSuKienFile);
+
+        if (extension == null)
+        {
+            ModelState.AddModelError(
+                nameof(AnhSuKienFile),
+                "Ảnh phải là JPG, PNG hoặc WEBP hợp lệ, tối đa 5 MB.");
+        }
+    }
+
+if (!ModelState.IsValid)
+{
+    ViewBag.SuKienId = id;
+    ViewBag.AnhHienTai = sk.AnhSuKien;
+    ViewBag.LaTrucTuyen = online != null;
+
+    var loaiHienThi = await _db.LoaiSuKien
+        .Where(x => x.TenLoai != null &&
+                    !x.TenLoai.Trim().ToLower().Contains("hybrid"))
+        .ToListAsync();
+
+    ViewBag.LoaiId = new SelectList(
+        loaiHienThi,
+        "LoaiId",
+        "TenLoai",
+        sk.LoaiId);
+
+    await NapDanhSachChuDeAsync();
+
+    return View(model);
+}
+
+    string? anhMoiDaLuu = null;
+
+    try
+    {
+        if (extension != null && AnhSuKienFile != null)
+        {
+            var thuMuc = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "sukien");
+
+            Directory.CreateDirectory(thuMuc);
+
+            var tenFile = $"{Guid.NewGuid():N}{extension}";
+
+            anhMoiDaLuu = Path.Combine(thuMuc, tenFile);
+
+            await using (var stream = new FileStream(
+                anhMoiDaLuu,
+                FileMode.CreateNew))
+            {
+                await AnhSuKienFile.CopyToAsync(stream);
+            }
+
+            sk.AnhSuKien = $"/uploads/sukien/{tenFile}";
+        }
+
+        sk.TenSuKien = model.TenSuKien.Trim();
+        sk.MoTaChiTiet = model.MoTaChiTiet;
+
+        sk.ThoiGianBatDau = model.ThoiGianBatDau;
+        sk.ThoiGianKetThuc = model.ThoiGianKetThuc;
+
+        if (sk.DiaDiem != null)
+        {
+            sk.DiaDiem.TenDiaDiem = model.TenDiaDiem;
+            sk.DiaDiem.DiaChi = model.DiaChi;
+            sk.DiaDiem.BanDo = model.BanDo;
+        }
+
+        if (online != null)
+        {
+            online.NenTang = model.NenTang;
+            online.LinkXem = model.LinkXem;
+            online.MatKhauPhong = model.MatKhauPhong;
+            online.HuongDan = model.HuongDan;
+        }
+
+var chuDeCu = await _db.SuKienChuDe
+    .Where(x => x.SuKienId == id)
+    .ToListAsync();
+
+var danhSachChuDeCu = chuDeCu
+    .Select(x => x.ChuDeId)
+    .ToHashSet();
+
+var danhSachChuDeMoi = model.ChuDeIds.ToHashSet();
+
+var chuDeCanXoa = chuDeCu
+    .Where(x => !danhSachChuDeMoi.Contains(x.ChuDeId))
+    .ToList();
+
+_db.SuKienChuDe.RemoveRange(chuDeCanXoa);
+
+var chuDeCanThem = danhSachChuDeMoi
+    .Where(chuDeId => !danhSachChuDeCu.Contains(chuDeId))
+    .Select(chuDeId => new SuKienChuDe
+    {
+        SuKienId = id,
+        ChuDeId = chuDeId
+    })
+    .ToList();
+
+_db.SuKienChuDe.AddRange(chuDeCanThem);
+
+        sk.TrangThaiDuyet = "ChoDuyet";
+
+        await _db.SaveChangesAsync();
+
+        TempData["ThongBao"] =
+            "Đã cập nhật sự kiện. Admin sẽ duyệt thông tin mới nhất.";
+
+        return RedirectToAction("Index");
+    }
+    catch
+    {
+        if (anhMoiDaLuu != null &&
+            System.IO.File.Exists(anhMoiDaLuu))
+        {
+            System.IO.File.Delete(anhMoiDaLuu);
+        }
+
+        throw;
+    }
+}
         public async Task<IActionResult> ChiTiet(int id)
         {
             var toChucId = await GetOrCreateToChucIdAsync();

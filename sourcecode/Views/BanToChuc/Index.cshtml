@@ -964,6 +964,25 @@
 
                 
 <ul class="dropdown-menu dropdown-menu-end btc-action-menu">
+    @if (sk.TrangThaiDuyet == "ChoDuyet" ||
+     sk.TrangThaiDuyet == "TuChoi")
+{
+    <li>
+        <a class="dropdown-item"
+           asp-controller="BanToChuc"
+           asp-action="SuaSuKien"
+           asp-route-id="@sk.SuKienId">
+
+            <i class="bi bi-pencil-square"></i>
+            Chỉnh sửa sự kiện
+
+        </a>
+    </li>
+
+    <li>
+        <hr class="dropdown-divider" />
+    </li>
+}
 
     @if (sk.TrangThaiDuyet == "DaDuyet")
     {
